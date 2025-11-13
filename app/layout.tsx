@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Kadwa } from "next/font/google";
+import { Kadwa, Inter } from "next/font/google";
 import "./globals.css";
 
 const kadwa = Kadwa({
   subsets: ["latin"],
   weight: ["400", "700"],
   variable: "--font-kadwa", // 👈 expose as CSS variable
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-inter", // 👈 expose as CSS variable
 });
 
 export const metadata: Metadata = {
@@ -20,7 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${kadwa.variable} antialiased`}>{children}</body>
+      <body className={`${kadwa.variable} ${inter.variable} antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }
