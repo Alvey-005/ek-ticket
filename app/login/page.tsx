@@ -47,12 +47,12 @@ export default function LoginPage() {
         <h1 className="text-white text-3xl font-bold font-kadwa">
           Ek Ticket.com
         </h1>
-        <button
+        <Button
           onClick={() => console.log("Register clicked")}
-          className="bg-orange-400 font-inter hover:bg-orange-600 text-white px-6 py-2 rounded-full font-medium transition-colors"
+          className="bg-orange-400 font-inter  text-white px-6 py-2 rounded-full font-medium transition-colors"
         >
           Register
-        </button>
+        </Button>
       </header>
 
       <main className="relative z-10 flex items-center justify-center py-20">
@@ -92,7 +92,8 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={!isValid || isSubmitting}
-                className="w-full bg-[#FF9101] hover:bg-orange-600 text-white py-3 rounded-lg font-semibold"
+                className="w-full bg-orange-400   text-white py-3 rounded-lg font-semibold"
+                
               >
                 {isSubmitting ? "Logging In..." : "Log In"}
               </Button>
