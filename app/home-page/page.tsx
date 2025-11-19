@@ -124,25 +124,21 @@ const PLANE_ROUTES = [
 
 function DealCard({ deal }: { deal: TravelDeal }) {
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition cursor-pointer">
-      <div className="h-48 md:h-52 overflow-hidden">
+    <div className="bg-white rounded-3xl overflow-hidden shadow-md ">
+      <div className="aspect-4/3 overflow-hidden">
         <img
           src={deal.image}
           alt={deal.name}
-          className="w-full h-full object-cover hover:scale-110 transition-transform duration-300 rounded-xl p-1"
+          className="w-full h-full object-cover hover:scale-110 transition-transform duration-300 rounded-3xl p-2"
         />
       </div>
       <div className="p-4 text-[#002B7A]  ">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-base md:text-lg ">{deal.name}</h3>
-          <span className="text-sm md:text-lg ">
-            from tk {deal.price}
-          </span>
+          <span className="text-sm md:text-lg ">from tk {deal.price}</span>
         </div>
         <p className="text-xs md:text-sm font-inter">{deal.duration}</p>
-        <p className="text-[11px] md:text-xs   mt-1">
-          {deal.validity}
-        </p>
+        <p className="text-[11px] md:text-xs   mt-1">{deal.validity}</p>
       </div>
     </div>
   );
@@ -158,21 +154,15 @@ function TripCard({
   titleClass?: string;
 }) {
   return (
-    <div
-      className={`relative rounded-2xl overflow-hidden cursor-pointer group ${
-        className ?? ""
-      }`}
-    >
+    <div className={`relative rounded-2xl overflow-hidden cursor-pointer group ${className ?? ""}`}>
       <img
         src={trip.image}
         alt={trip.title}
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
       <div className="absolute bottom-4 left-4 text-white">
-        {trip.subtitle && (
-          <p className="text-xs md:text-sm opacity-90">{trip.subtitle}</p>
-        )}
+        {trip.subtitle && <p className="text-xs md:text-sm opacity-90">{trip.subtitle}</p>}
         <h3 className={`${titleClass} font-bold`}>{trip.title}</h3>
       </div>
     </div>
@@ -185,6 +175,8 @@ export default function EkTicketHomepage() {
   const [to, setTo] = useState("London");
   const [date, setDate] = useState("Tue, July 8th");
   const [passengers, setPassengers] = useState("2 People Onboard");
+  const [activeTab, setActiveTab] = useState("");
+  const [activeAction, setActiveAction] = useState("");
 
   const travelDeals = TRAVEL_DEALS;
   const featuredTrips = FEATURED_TRIPS;
@@ -205,31 +197,36 @@ export default function EkTicketHomepage() {
           {/* NAVIGATION */}
           <nav className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 py-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-              <div className="text-white text-xl sm:text-2xl font-bold">
-                Ek Ticket.com
-              </div>
-              <div className="flex flex-wrap gap-2 sm:gap-3 font-inter">
-                {["All", "Buses", "Trains"].map((label) => (
+              <div className="text-white text-xl sm:text-2xl font-bold">Ek Ticket.com</div>
+              <div className="flex flex-wrap gap-6 font-inter">
+                {["All", "Buses", "Trains", "Flights"].map((label) => (
                   <button
                     key={label}
-                    className="px-4 sm:px-6 py-2 bg-white rounded-full text-xs sm:text-sm font-medium"
+                    onClick={() => setActiveTab(label)}
+                    className={`
+                px-4 sm:px-10 py-2 rounded-full text-xs sm:text-sm font-medium transition
+                  ${activeTab === label ? "bg-orange-400 text-white" : "bg-white text-[#002B7A]"}
+                        `}
                   >
                     {label}
                   </button>
                 ))}
-                <button className="px-4 sm:px-6 py-2 bg-orange-400 text-white rounded-full text-xs sm:text-sm font-medium">
-                  Flights
-                </button>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              <button className="px-4 sm:px-6 py-2 bg-white rounded-full text-xs sm:text-sm font-medium">
-                Your Bookings
-              </button>
-              <button className="px-4 sm:px-6 py-2 bg-orange-400 text-white rounded-full text-xs sm:text-sm font-medium">
-                Sign in
-              </button>
+            <div className="flex flex-wrap gap-2 sm:gap-3 font-inter">
+              {["Your Bookings", "Sign in"].map((label) => (
+                <button
+                  key={label}
+                  onClick={() => setActiveAction(label)}
+                  className={`
+                px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium transition
+                  ${activeAction === label ? "bg-orange-400 text-white" : "bg-white text-[#002B7A]"}
+                        `}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </nav>
 
@@ -246,24 +243,21 @@ export default function EkTicketHomepage() {
       </section>
 
       {/* FLOATING SEARCH BAR */}
-      <div className="relative z-50 -mt-10 md:-mt-16 lg:-mt-20 flex justify-center">
-        <div className="w-full max-w-[1240px] mx-auto px-4 sm:px-6">
+      <div className="relative z-50 -mt-10 md:-mt-16  lg:-mt-20 flex justify-center">
+        <div className="w-full max-w-[1240px] mx-auto px-14 sm:px-6">
           <SearchBar onSearch={(payload) => console.log("search", payload)} />
         </div>
       </div>
 
-      {/* 🟨 TRAVEL DEALS */}
-      <section className="w-full bg-[#F9FAFB] py-12 sm:py-16">
+      <section className="w-full bg-[#F9FAFB] sm:py-16">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
               <h2 className="text-2xl sm:text-3xl text-[#002B7A]">
-                Travel deals under{" "}
-                <span className="text-orange-500">Tk 50,879</span>
+                Travel deals under <span className="text-orange-500">Tk 50,879</span>
               </h2>
               <p className="text-[#002B7A] mt-1 text-sm sm:text-base">
-                One app for every step of your journey—travel planning has never
-                been easier!
+                One app for every step of your journey—travel planning has never been easier!
               </p>
             </div>
 
@@ -287,17 +281,21 @@ export default function EkTicketHomepage() {
             }}
             spaceBetween={16}
             slidesPerView={1.1}
+            className="pb-2 h-auto!" // Swiper's height becomes natural
             breakpoints={{
               480: { slidesPerView: 1.5 },
               640: { slidesPerView: 2 },
               768: { slidesPerView: 3 },
               1024: { slidesPerView: 4 },
             }}
-            className="pb-6 sm:pb-10"
           >
             {[...travelDeals, ...travelDeals].map((deal, idx) => (
-              <SwiperSlide key={`${deal.name}-${idx}`}>
-                <DealCard deal={deal} />
+              <SwiperSlide key={`${deal.name}-${idx}`} className="h-auto!">
+                <div className="pb-2">
+                  {" "}
+                  {/* ensures bottom never clips */}
+                  <DealCard deal={deal} />
+                </div>
               </SwiperSlide>
             ))}
           </Swiper>
@@ -306,7 +304,7 @@ export default function EkTicketHomepage() {
 
       {/* FEATURED TRIPS */}
       <section className="w-full bg-white py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 ">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8">
             Featured Trips
           </h2>
@@ -318,19 +316,15 @@ export default function EkTicketHomepage() {
                   alt={featuredTrips[0].title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
                   <span className="inline-block mb-2 px-3 py-1 rounded-full bg-white/30 backdrop-blur text-[10px] sm:text-xs">
                     Glass Button
                   </span>
                   {featuredTrips[0].subtitle && (
-                    <p className="text-xs sm:text-sm opacity-90">
-                      {featuredTrips[0].subtitle}
-                    </p>
+                    <p className="text-xs sm:text-sm opacity-90">{featuredTrips[0].subtitle}</p>
                   )}
-                  <h3 className="text-lg sm:text-xl font-bold">
-                    {featuredTrips[0].title}
-                  </h3>
+                  <h3 className="text-lg sm:text-xl font-bold">{featuredTrips[0].title}</h3>
                 </div>
               </div>
             </div>
@@ -379,9 +373,7 @@ export default function EkTicketHomepage() {
                   <div className="w-5 h-5 bg-orange-100 rounded flex items-center justify-center">
                     <div className="w-2 h-2 bg-orange-500 rounded-full" />
                   </div>
-                  <h3 className="font-bold text-gray-800 text-sm sm:text-base">
-                    {category.title}
-                  </h3>
+                  <h3 className="font-bold text-gray-800 text-sm sm:text-base">{category.title}</h3>
                 </div>
                 <div className="flex flex-col gap-2 sm:gap-3">
                   {category.routes.map((route, idx) => (
@@ -432,9 +424,7 @@ export default function EkTicketHomepage() {
               <div className="flex flex-col gap-3 text-[#0A142F] text-sm sm:text-base">
                 <div className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 mt-1" />
-                  <span>
-                    345 Faulconer Drive, Suite 4 • Charlottesville, CA, 12345
-                  </span>
+                  <span>345 Faulconer Drive, Suite 4 • Charlottesville, CA, 12345</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-4 sm:gap-8">
                   <div className="flex items-center gap-2">
@@ -447,17 +437,13 @@ export default function EkTicketHomepage() {
                   </div>
                 </div>
                 <div className="mt-2">
-                  <span className="text-xs sm:text-sm text-gray-500">
-                    Social Media
-                  </span>
+                  <span className="text-xs sm:text-sm text-gray-500">Social Media</span>
                   <div className="mt-2 flex items-center gap-3 sm:gap-4 text-[#002B7A]">
-                    {[Facebook, Twitter, Linkedin, Youtube, Instagram].map(
-                      (Icon, i) => (
-                        <a key={i} href="#" className="hover:opacity-80">
-                          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                        </a>
-                      )
-                    )}
+                    {[Facebook, Twitter, Linkedin, Youtube, Instagram].map((Icon, i) => (
+                      <a key={i} href="#" className="hover:opacity-80">
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </a>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -468,13 +454,7 @@ export default function EkTicketHomepage() {
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <nav className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-[#0A142F]">
-              {[
-                "ABOUT US",
-                "CONTACT US",
-                "HELP",
-                "PRIVACY POLICY",
-                "DISCLAIMER",
-              ].map((item) => (
+              {["ABOUT US", "CONTACT US", "HELP", "PRIVACY POLICY", "DISCLAIMER"].map((item) => (
                 <a key={item} href="#" className="hover:text-gray-900">
                   {item}
                 </a>

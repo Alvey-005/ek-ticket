@@ -7,7 +7,7 @@ export default function SearchButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="h-12 px-6 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-medium"
+      className="h-12 px-6 rounded-xl bg-orange-400 text-white font-medium"
     >
       Search
     </button>

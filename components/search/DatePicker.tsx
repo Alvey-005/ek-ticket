@@ -1,21 +1,13 @@
 "use client";
 
-import React from "react";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import * as React from "react";
 
-function addDays(date: Date, days: number) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
+import { CalendarIcon } from "lucide-react";
 
-function formatDate(d: Date) {
-  return d.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
+import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 
 export default function DatePicker({
   label,
@@ -25,32 +17,46 @@ export default function DatePicker({
 }: {
   label: string;
   value: Date;
-  onChange: (d: Date) => void;
+  onChange: (date: Date) => void;
   className?: string;
 }) {
+  const [open, setOpen] = React.useState(false);
+
   return (
-    <div
-      className={["flex items-center gap-2 w-full", className || ""].join(" ")}
-    >
-      <button
-        type="button"
-        onClick={() => onChange(addDays(value, -1))}
-        className="p-1 rounded-md hover:bg-gray-100 text-gray-700"
-        aria-label="Previous day"
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
-      <span className="text-sm font-medium text-[#002B7A]">
-        {formatDate(value)}
-      </span>
-      <button
-        type="button"
-        onClick={() => onChange(addDays(value, 1))}
-        className="p-1 rounded-md hover:bg-gray-100 text-gray-700"
-        aria-label="Next day"
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
+    <div className={cn("w-full", className)}>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            className={cn(
+              "h-12 w-full rounded-xl bg-white px-4 flex items-center justify-between text-left",
+
+            )}
+          >
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-500">{label}</span>
+              <span className="text-[15px] text-[#002B7A] font-medium">
+                {value ? format(value, "EEE, MMM d") : "Select date"}
+              </span>
+            </div>
+
+            <CalendarIcon className="w-4 h-4 text-gray-400" />
+          </button>
+        </PopoverTrigger>
+
+        <PopoverContent className="w-auto p-0 rounded-xl shadow-lg">
+          <Calendar
+            mode="single"
+            selected={value}
+            onSelect={(date) => {
+              if (date) {
+                onChange(date);
+                setOpen(false); // close after selecting
+              }
+            }}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
