@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-
-import { CalendarIcon } from "lucide-react";
+import { format, addDays, subDays } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
 
 export default function DatePicker({
   label,
@@ -22,24 +21,40 @@ export default function DatePicker({
 }) {
   const [open, setOpen] = React.useState(false);
 
+  // ⬅️ Go to previous day
+  const goPrevDay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange(subDays(value, 1));
+  };
+
+  // ➡️ Go to next day
+  const goNextDay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange(addDays(value, 1));
+  };
+
   return (
     <div className={cn("w-full", className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
-            className={cn(
-              "h-12 w-full rounded-xl bg-white px-4 flex items-center justify-between text-left",
-
-            )}
+            className="h-12 w-full rounded-xl bg-white px-4 flex items-center justify-between"
           >
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-500">{label}</span>
-              <span className="text-[15px] text-[#002B7A] font-medium">
-                {value ? format(value, "EEE, MMM d") : "Select date"}
-              </span>
-            </div>
+            <span className="text-[15px] text-[#002B7A] font-medium">
+              {format(value, "EEE, MMM d")}
+            </span>
 
-            <CalendarIcon className="w-4 h-4 text-gray-400" />
+            {/* Prev/Next Day Buttons */}
+            <div className="flex items-center gap-1">
+              <ChevronLeft
+                className="w-4 h-4 text-gray-500 cursor-pointer hover:text-black"
+                onClick={goPrevDay}
+              />
+              <ChevronRight
+                className="w-4 h-4 text-gray-500 cursor-pointer hover:text-black"
+                onClick={goNextDay}
+              />
+            </div>
           </button>
         </PopoverTrigger>
 
@@ -50,7 +65,7 @@ export default function DatePicker({
             onSelect={(date) => {
               if (date) {
                 onChange(date);
-                setOpen(false); // close after selecting
+                setOpen(false);
               }
             }}
             initialFocus

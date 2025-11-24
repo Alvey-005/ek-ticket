@@ -12,6 +12,7 @@ import SearchButton from "./SearchButton";
 export type PassengerCounts = {
   adults: number;
   children: number;
+  infants: number; // ← ADD THIS
 };
 
 export type SearchPayload = {
@@ -78,6 +79,7 @@ export default function SearchBar({
   const [passengers, setPassengers] = useState<PassengerCounts>({
     adults: 2,
     children: 0,
+    infants: 0,
   });
 
   const passengerLabel = useMemo(() => formatDisplay(passengers), [passengers]);
@@ -180,25 +182,29 @@ export default function SearchBar({
         <TripTypeSelector value={tripType} onChange={setTripType} />
       </div>
 
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex flex-col md:flex-col md:flex-wrap lg:flex-row gap-3">
         {/* FROM + SWAP + TO */}
-        <div className="relative flex flex-1 items-center min-w-[300px]">
-          <div className="flex-1 pr-4">
+        <div className="relative flex flex-1  items-center md:gap-8">
+          <div className="flex-1">
             <LocationInput label="From" value={from} onChange={setFrom} className="w-full" />
           </div>
 
-          <div className="absolute left-1/2 -translate-x-1/2 z-20">
+          <div className="flex justify-center absolute left-1/2 -translate-x-1/2 z-20">
+            {" "}
             <SwapButton onSwap={handleSwap} />
           </div>
 
-          <div className="flex-1 pl-4">
+          <div className="flex-1">
             <LocationInput label="To" value={to} onChange={setTo} className="w-full" />
           </div>
         </div>
 
         {/* DATE + RETURN */}
-        <div className="flex flex-1 h-12 items-center rounded-xl border border-gray-300 bg-white overflow-hidden">
-          <div className="flex-1 h-full flex items-center pl-4">
+        <div
+          className="flex h-12 flex-1 items-center rounded-xl border border-gray-300 bg-white overflow-hidden divide-dashed
+                          "
+        >
+          <div className=" h-full flex items-center w-1/2">
             <DatePicker
               label="Date"
               value={departDate}
@@ -207,9 +213,11 @@ export default function SearchBar({
             />
           </div>
 
-          <div className="h-8 border-l border-gray-300"></div>
-
-          <div className="flex-1 h-full flex items-center pl-4">
+          <div
+            className={`h-full flex items-center w-1/2 border-l border-dashed  ${
+              tripType === "Round trip" ? "px-0" : "px-4"
+            }`}
+          >
             {tripType === "Round trip" ? (
               <ReturnDatePicker
                 label="Return"
@@ -229,15 +237,15 @@ export default function SearchBar({
         </div>
 
         {/* PASSENGERS + SEARCH */}
-        <div className="flex flex-1 items-center gap-3 min-w-[260px]">
+        <div className="flex flex-col md:flex-col lg:flex-row items-center gap-3">
           <PassengerSelector
             value={passengers}
             onChange={setPassengers}
             label={passengerLabel}
-            className="flex-1"
+            className="flex-1 w-full"
           />
 
-          <SearchButton onClick={handleSearch} />
+          <SearchButton onClick={handleSearch} className="md:w-full lg:w-auto w-full" />
         </div>
       </div>
     </div>

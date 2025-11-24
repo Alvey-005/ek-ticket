@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import { FormInputField } from "@/components/features/FormInputFields"; // same shared component as Contact Us
 
 // ✅ Schema validation
@@ -18,6 +19,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const router = useRouter();
   const {
     control,
     handleSubmit,
@@ -28,11 +30,11 @@ export default function LoginPage() {
   });
 
   const handleLogin = (data: LoginFormValues) => {
-    console.log("Login attempt:", data);
+    router.push("/verify");
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden font-inter px-6 sm:px-10 md:px-16 lg:px-30">
+    <div className="min-h-screen relative overflow-hidden font-inter px-2 sm:px-10 md:px-16 lg:px-30">
       <div
         className="absolute top-0 left-0 w-full h-1/2 bg-cover bg-center"
         style={{

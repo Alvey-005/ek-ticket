@@ -1,0 +1,166 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import cn from "classnames";
+import SetPassword from "@/components/SetPassword";
+import SuccessPage from "@/components/SuccessPage";
+const OTP_LENGTH = 6;
+const OTP_TIME = 60;
+
+export default function VerifyOtp({ email, onSuccess }: { email: string; onSuccess: () => void }) {
+  const [otpValues, setOtpValues] = useState(Array(OTP_LENGTH).fill(""));
+  const [errors, setErrors] = useState(Array(OTP_LENGTH).fill(""));
+  const [otpError, setOtpError] = useState("");
+  const [timer, setTimer] = useState(OTP_TIME);
+  const [canResend, setCanResend] = useState(false);
+
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // ========================
+  // TIMER LOGIC
+  // ========================
+  useEffect(() => {
+    if (timer <= 0) {
+      setCanResend(true);
+      return;
+    }
+    const interval = setInterval(() => {
+      setTimer((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  const resetTimer = () => {
+    setTimer(OTP_TIME);
+    setCanResend(false);
+  };
+
+  const formatTimer = (sec: number) => {
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
+  // ========================
+  // OTP INPUT BEHAVIOR
+  // ========================
+  const handleChange = (value: string, index: number) => {
+    const digit = value.replace(/\D/, "");
+    if (digit.length > 1) return;
+
+    const newValues = [...otpValues];
+    newValues[index] = digit;
+    setOtpValues(newValues);
+
+    if (digit && index < OTP_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === "Backspace") {
+      if (!otpValues[index] && index > 0) {
+        inputRefs.current[index - 1]?.focus();
+      }
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "");
+
+    if (pasted.length === OTP_LENGTH) {
+      setOtpValues(pasted.split(""));
+      inputRefs.current[OTP_LENGTH - 1]?.focus();
+    }
+  };
+
+  // ========================
+  // VERIFY OTP
+  // ========================
+  const handleVerify = () => {
+    if (otpValues.some((v) => !v)) {
+      setErrors(otpValues.map((v) => (v ? "" : "Required")));
+      return;
+    }
+
+    setOtpError("");
+
+    // 👇 CALL THIS WHEN OTP IS VALID
+    onSuccess();
+  };
+
+  // ========================
+  // RESEND OTP
+  // ========================
+  const handleResend = () => {
+    if (!canResend) return;
+
+    resetTimer();
+    setOtpValues(Array(OTP_LENGTH).fill(""));
+    setErrors(Array(OTP_LENGTH).fill(""));
+    setOtpError("");
+
+    console.log("Resend OTP");
+  };
+
+  return (
+    <div className="max-w-lg w-full rounded-[30px] bg-white shadow-2xl px-10 py-20 mx-auto">
+      <h2 className="text-4xl font-bold text-[#002B7A]">Verify</h2>
+      <h2 className="text-4xl font-bold text-[#FF9101]">OTP</h2>
+
+      <p className="text-gray-700 mt-4">
+        We sent a 6-digit OTP code to:
+        <br />
+        <span className="font-semibold">{email}</span>
+      </p>
+
+      {/* OTP Boxes */}
+      <div className="flex justify-center gap-3 mt-8">
+        {otpValues.map((value, idx) => (
+          <input
+            key={idx}
+            ref={(el) => {
+              inputRefs.current[idx] = el;
+            }}
+            maxLength={1}
+            value={value}
+            onChange={(e) => handleChange(e.target.value, idx)}
+            onKeyDown={(e) => handleKeyDown(e, idx)}
+            onPaste={idx === 0 ? handlePaste : undefined}
+            className={cn(
+              "w-12 h-12 border-2 rounded-md text-center text-xl",
+              errors[idx] ? "border-red-500" : "border-[#002B7A]"
+            )}
+          />
+        ))}
+      </div>
+
+      {/* Error Message */}
+      {otpError && <p className="text-center text-sm text-red-600 mt-3">{otpError}</p>}
+
+      {/* Verify Button */}
+      <Button
+        className="w-full bg-[#FF9101] text-white mt-8 py-3"
+        disabled={!otpValues.every((v) => v)}
+        onClick={handleVerify}
+      >
+        Verify OTP
+      </Button>
+
+      {/* Resend Section */}
+      <p className="text-sm text-gray-600 text-center mt-4">
+        Didn’t get a code?{" "}
+        <button
+          disabled={!canResend}
+          onClick={handleResend}
+          className={`underline ${canResend ? "text-[#002B7A]" : "text-gray-400"}`}
+        >
+          Resend {timer > 0 && `(${formatTimer(timer)})`}
+        </button>
+      </p>
+    </div>
+  );
+}
