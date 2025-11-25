@@ -88,13 +88,9 @@ export default function VerifyOtp({ email, onSuccess }: { email: string; onSucce
 
     setOtpError("");
 
-    // 👇 CALL THIS WHEN OTP IS VALID
     onSuccess();
   };
 
-  // ========================
-  // RESEND OTP
-  // ========================
   const handleResend = () => {
     if (!canResend) return;
 
@@ -107,18 +103,18 @@ export default function VerifyOtp({ email, onSuccess }: { email: string; onSucce
   };
 
   return (
-    <div className="max-w-lg w-full rounded-[30px] bg-white shadow-2xl px-10 py-20 mx-auto">
-      <h2 className="text-4xl font-bold text-[#002B7A]">Verify</h2>
-      <h2 className="text-4xl font-bold text-[#FF9101]">OTP</h2>
+    <div className="max-w-xl w-full rounded-[30px] bg-white shadow-2xl px-15 py-20 mx-auto">
+      <h2 className="text-5xl font-bold font-kadwa text-[#002B7A]">Verify</h2>
+      <h2 className="text-5xl font-bold font-kadwa text-[#FF9101]">OTP</h2>
 
-      <p className="text-gray-700 mt-4">
+      <p className="text-xl text-[#52515C] mt-4 leading-tight">
         We sent a 6-digit OTP code to:
         <br />
-        <span className="font-semibold">{email}</span>
+        <span className="font-inter">{email}</span>
       </p>
 
       {/* OTP Boxes */}
-      <div className="flex justify-center gap-3 mt-8">
+      <div className="flex justify-center gap-3 mt-25">
         {otpValues.map((value, idx) => (
           <input
             key={idx}
@@ -131,7 +127,7 @@ export default function VerifyOtp({ email, onSuccess }: { email: string; onSucce
             onKeyDown={(e) => handleKeyDown(e, idx)}
             onPaste={idx === 0 ? handlePaste : undefined}
             className={cn(
-              "w-12 h-12 border-2 rounded-md text-center text-xl",
+              "w-15 h-15 border rounded-md text-center text-xl",
               errors[idx] ? "border-red-500" : "border-[#002B7A]"
             )}
           />
@@ -143,7 +139,7 @@ export default function VerifyOtp({ email, onSuccess }: { email: string; onSucce
 
       {/* Verify Button */}
       <Button
-        className="w-full bg-[#FF9101] text-white mt-8 py-3"
+        className="w-full bg-[#FF9101] hover:bg-orange-500 text-white mt-8 py-7 font-inter rounded-lg text-md transition"
         disabled={!otpValues.every((v) => v)}
         onClick={handleVerify}
       >

@@ -24,20 +24,18 @@ export default function SetPassword({ onSuccess }: { onSuccess: () => void }) {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-10 mx-auto font-inter">
+    <div className="max-w-xl w-full rounded-[30px] bg-white shadow-2xl px-15 py-20 mx-auto">
       {/* Title */}
-      <h2 className="text-4xl font-bold text-[#002B7A] leading-tight">
-        Set Your
-      </h2>
-      <h2 className="text-4xl font-bold text-[#FF9101] -mt-1">Password</h2>
+      <h2 className="text-4xl font-kadwa font-bold text-[#002B7A] leading-tight">Set Your</h2>
+      <h2 className="text-4xl font-kadwa font-bold text-[#FF9101] -mt-1">Password</h2>
 
       {/* Subtitle */}
-      <p className="text-gray-600 mt-4 text-base">
+      <p className="text-gray-600 mt-4 text-xl leading-tight">
         Create A Secure Password <br /> For Your Account
       </p>
 
       {/* Password Input */}
-      <div className="relative mt-8">
+      <div className="relative mt-10">
         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#002B7A] w-5 h-5" />
         <input
           type="password"
@@ -65,14 +63,14 @@ export default function SetPassword({ onSuccess }: { onSuccess: () => void }) {
 
       {/* Submit Button */}
       <Button
-        className="w-full bg-[#FF9101] text-white py-3 mt-6 text-lg rounded-lg"
+        className="w-full bg-[#FF9101] text-white py-7 hover:bg-orange-500 text-md mt-6 font-inter text-md rounded-lg"
         onClick={handleSubmit}
       >
         Send OTP
       </Button>
 
       {/* Login Link */}
-      <p className="text-sm text-[#0A142F] mt-4 text-center">
+      <p className="text-sm text-[#002B7A] mt-4 text-left">
         Already have an account?{" "}
         <a href="/login" className="underline font-semibold">
           Login
