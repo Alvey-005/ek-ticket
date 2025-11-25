@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import cn from "classnames";
-import SetPassword from "@/components/SetPassword";
-import SuccessPage from "@/components/SuccessPage";
+
+
 const OTP_LENGTH = 6;
 const OTP_TIME = 60;
 
@@ -17,9 +17,7 @@ export default function VerifyOtp({ email, onSuccess }: { email: string; onSucce
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // ========================
-  // TIMER LOGIC
-  // ========================
+  
   useEffect(() => {
     if (timer <= 0) {
       setCanResend(true);
@@ -77,9 +75,6 @@ export default function VerifyOtp({ email, onSuccess }: { email: string; onSucce
     }
   };
 
-  // ========================
-  // VERIFY OTP
-  // ========================
   const handleVerify = () => {
     if (otpValues.some((v) => !v)) {
       setErrors(otpValues.map((v) => (v ? "" : "Required")));
