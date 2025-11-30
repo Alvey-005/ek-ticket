@@ -136,6 +136,7 @@ const ACTION_BUTTONS = ["Your Bookings", "Sign in"] as const;
 const FOOTER_LINKS = ["ABOUT US", "CONTACT US", "HELP", "PRIVACY POLICY", "DISCLAIMER"] as const;
 const SOCIAL_ICONS = [Facebook, Twitter, Linkedin, Youtube, Instagram] as const;
 
+
 const ROUTE_CATEGORIES: RouteCategory[] = [
   { title: "Train Tickets", routes: TRAIN_ROUTES },
   { title: "Bus Tickets", routes: BUS_ROUTES },

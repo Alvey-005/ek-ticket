@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import cn from "classnames";
+import axios from "axios";
 
 
 const OTP_LENGTH = 6;
@@ -17,7 +18,6 @@ export default function VerifyOtp({ email, onSuccess }: { email: string; onSucce
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  
   useEffect(() => {
     if (timer <= 0) {
       setCanResend(true);
@@ -41,9 +41,7 @@ export default function VerifyOtp({ email, onSuccess }: { email: string; onSucce
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  // ========================
-  // OTP INPUT BEHAVIOR
-  // ========================
+
   const handleChange = (value: string, index: number) => {
     const digit = value.replace(/\D/, "");
     if (digit.length > 1) return;
@@ -108,8 +106,11 @@ export default function VerifyOtp({ email, onSuccess }: { email: string; onSucce
         <span className="font-inter">{email}</span>
       </p>
 
+
+
       {/* OTP Boxes */}
       <div className="flex justify-center gap-3 mt-25">
+        
         {otpValues.map((value, idx) => (
           <input
             key={idx}
@@ -122,7 +123,8 @@ export default function VerifyOtp({ email, onSuccess }: { email: string; onSucce
             onKeyDown={(e) => handleKeyDown(e, idx)}
             onPaste={idx === 0 ? handlePaste : undefined}
             className={cn(
-              "w-15 h-15 border rounded-md text-center text-xl",
+              "w-10 h-10  md:w-15 md:h-15 border sm:w-12 sm:h-14 rounded-md text-center text-xl",
+
               errors[idx] ? "border-red-500" : "border-[#002B7A]"
             )}
           />

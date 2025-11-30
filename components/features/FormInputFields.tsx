@@ -20,6 +20,7 @@ interface FormInputFieldProps<T extends FieldValues> extends BaseFormFieldProps<
   inputClassName?: string;
   labelClassName?: string;
   errorClassName?: string;
+  maxLength?: number;
 }
 
 export const FormInputField = <T extends FieldValues>({
@@ -35,6 +36,7 @@ export const FormInputField = <T extends FieldValues>({
   labelClassName = "",
   errorClassName = "",
   required = false,
+  maxLength,
 }: FormInputFieldProps<T>) => {
   return (
     <div className={cn("flex w-full flex-1 flex-col gap-y-1", className)}>
@@ -55,6 +57,7 @@ export const FormInputField = <T extends FieldValues>({
               type={type}
               placeholder={placeholder}
               disabled={disabled}
+              maxLength={maxLength} // <-- IMPORTANT
               className={cn(
                 "h-11 w-full rounded-lg border pr-10 text-sm transition-colors md:h-12 md:text-base",
                 "disabled:cursor-not-allowed disabled:opacity-50",

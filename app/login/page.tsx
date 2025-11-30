@@ -1,40 +1,62 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, Lock } from "lucide-react";
+import { Phone, Lock } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { FormInputField } from "@/components/features/FormInputFields";
+import axios from "axios";
+import { api } from "@/lib/api";
+import { API_URLS } from "@/lib/urls";
+
+// Types
+type LoginFormValues = z.infer<typeof loginSchema>;
+
+interface FormFieldProps {
+  name: keyof LoginFormValues;
+  control: any;
+  type?: "text" | "email" | "password" | "tel" | "url" | "number";
+  placeholder: string;
+  icon: typeof Phone | typeof Lock;
+  iconColor?: string;
+}
+
+interface LoginFormProps {
+  onSubmit: (e?: React.BaseSyntheticEvent) => void;
+  control: any;
+  isValid: boolean;
+  isSubmitting: boolean;
+  onRegisterClick: () => void;
+}
 
 // Constants
 const FOOTER_LINKS = ["ABOUT US", "CONTACT US", "HELP", "PRIVACY POLICY", "DISCLAIMER"] as const;
 
 // Schema
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  msisdn: z.string().min(11, "Please enter a valid phone number"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+// Utility Functions
+const handleApiError = (err: unknown): string => {
+  if (axios.isAxiosError(err)) {
+    console.error("login API error:", err.response?.data || err.message);
+    return err.response?.data?.message || "Login failed. Please try again.";
+  }
+  console.error("Unexpected login error:", err);
+  return "An unexpected error occurred. Please try again.";
+};
 
 // Components
-interface FormFieldProps {
-  name: keyof LoginFormValues;
-  control: any;
-  type?: "text" | "email" | "password" | "tel" | "url" | "number";
-  placeholder: string;
-  icon: typeof Mail | typeof Lock;
-  iconColor?: string;
-}
-
 function FormField({
   name,
   control,
-  type,
+  type = "text",
   placeholder,
   icon: Icon,
   iconColor = "text-primary",
@@ -102,30 +124,28 @@ function Footer() {
   );
 }
 
-interface LoginFormProps {
-  onSubmit: (e?: React.BaseSyntheticEvent) => void;
-  control: any;
-  isValid: boolean;
-  isSubmitting: boolean;
-  onRegisterClick: () => void;
-}
-
-function LoginForm({ onSubmit, control, isValid, isSubmitting, onRegisterClick }: LoginFormProps) {
+function LoginForm({
+  onSubmit,
+  control,
+  isValid,
+  isSubmitting,
+  onRegisterClick,
+}: LoginFormProps) {
   return (
     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden">
-      <div className="p-10 md:p-12 space-y-8">
+      <div className="p-10 md:p-12 space-y-10">
         <div className="font-kadwa">
           <h2 className="text-4xl font-bold text-[#002B7A]">Log in to your</h2>
           <h2 className="text-4xl font-bold text-primary">Account</h2>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 pt-5">
           <FormField
-            name="email"
+            name="msisdn"
             control={control}
-            type="email"
-            placeholder="Email Address"
-            icon={Mail}
+            type="text"
+            placeholder="Phone Number"
+            icon={Phone}
           />
 
           <FormField
@@ -140,7 +160,7 @@ function LoginForm({ onSubmit, control, isValid, isSubmitting, onRegisterClick }
           <Button
             onClick={onSubmit}
             disabled={!isValid || isSubmitting}
-            className="w-full bg-orange-400 text-white py-3 rounded-lg font-semibold"
+            className="w-full bg-[#FF9101] hover:bg-orange-500 text-white py-7 font-inter rounded-lg text-lg transition"
           >
             {isSubmitting ? "Logging In..." : "Log In"}
           </Button>
@@ -157,22 +177,34 @@ function LoginForm({ onSubmit, control, isValid, isSubmitting, onRegisterClick }
   );
 }
 
-// Main Component
-export default function LoginPage() {
+// Custom Hook for Login Logic
+function useLoginLogic() {
   const router = useRouter();
+  const [error, setError] = useState<string>("");
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid, isSubmitting },
+    formState: { isValid, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
   });
 
   const handleLogin = useCallback(
-    (data: LoginFormValues) => {
-      router.push("/verify");
+    async (data: LoginFormValues) => {
+      console.log("login form data:", data);
+      setError("");
+
+      try {
+        const res = await api.post(API_URLS.login, data);
+        console.log("login API response:", res);
+        
+        router.push("/");
+      } catch (err) {
+        const errorMessage = handleApiError(err);
+        setError(errorMessage);
+      }
     },
     [router]
   );
@@ -180,6 +212,29 @@ export default function LoginPage() {
   const handleRegisterClick = useCallback(() => {
     router.push("/register");
   }, [router]);
+
+  return {
+    control,
+    handleSubmit,
+    isValid,
+    isSubmitting,
+    error,
+    handleLogin,
+    handleRegisterClick,
+  };
+}
+
+// Main Component
+export default function LoginPage() {
+  const {
+    control,
+    handleSubmit,
+    isValid,
+    isSubmitting,
+    error,
+    handleLogin,
+    handleRegisterClick,
+  } = useLoginLogic();
 
   return (
     <div className="min-h-screen relative overflow-hidden font-inter px-2 sm:px-10 md:px-16 lg:px-30">

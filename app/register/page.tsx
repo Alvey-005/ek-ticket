@@ -1,71 +1,25 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, Phone, User, ChevronDown } from "lucide-react";
+import { Mail, Phone, User, IdCard, LucideIcon } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { FormInputField } from "@/components/features/FormInputFields";
 import VerifyOtp from "@/components/VerifyOtp";
 import SetPassword from "@/components/SetPassword";
 import SuccessPage from "@/components/SuccessPage";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { LucideIcon } from "lucide-react";
+import axios from "axios";
+import { api } from "@/lib/api";
+import { API_URLS } from "@/lib/urls";
 
-// Constants
-const PASSENGER_TYPES = ["Adult", "Student", "Child"] as const;
-const FOOTER_LINKS = ["ABOUT US", "CONTACT US", "HELP", "PRIVACY POLICY", "DISCLAIMER"] as const;
-
+// Types
 type Step = "register" | "verify" | "password" | "success";
 
-// Schema
-const registerSchema = z.object({
-  fullName: z.string().min(2, "Please enter your full name"),
-  phone: z.string().min(8, "Please enter a valid phone number"),
-  email: z.string().email("Please enter a valid email address"),
-  passengerType: z.string().min(1, "Please select a passenger type"),
-});
+export type RegisterFormValues = z.infer<typeof registerSchema>;
 
-type RegisterFormValues = z.infer<typeof registerSchema>;
-
-// Components
-interface PassengerTypePopoverProps {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-function PassengerTypePopover({ value, onChange }: PassengerTypePopoverProps) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="w-full h-12 pl-12 pr-10 text-left rounded-lg bg-white text-[#002B7A] focus:outline-none"
-          aria-label="Select passenger type"
-        >
-          {value || "Passenger Type"}
-        </button>
-      </PopoverTrigger>
-
-      <PopoverContent className="p-0 w-full rounded-md border bg-white shadow-lg" align="start">
-        {PASSENGER_TYPES.map((opt) => (
-          <button
-            key={opt}
-            type="button"
-            className={`w-full px-4 py-2 text-left text-sm font-inter hover:bg-gray-100 ${
-              value === opt ? "bg-gray-50 font-medium" : ""
-            }`}
-            onClick={() => onChange(opt)}
-          >
-            {opt}
-          </button>
-        ))}
-      </PopoverContent>
-    </Popover>
-  );
-}
 interface FormFieldProps {
   name: keyof RegisterFormValues;
   control: any;
@@ -73,8 +27,46 @@ interface FormFieldProps {
   type?: "text" | "email" | "password" | "tel" | "url" | "number";
   error?: string;
   icon: LucideIcon;
+  maxLength?: number;
 }
 
+interface RegisterFormProps {
+  onSubmit: (e?: React.BaseSyntheticEvent) => void;
+  control: any;
+  errors: any;
+  isValid: boolean;
+  isSubmitting: boolean;
+}
+
+// Constants
+const FOOTER_LINKS = ["ABOUT US", "CONTACT US", "HELP", "PRIVACY POLICY", "DISCLAIMER"] as const;
+
+// Schema
+const registerSchema = z
+  .object({
+    full_name: z.string().min(1, "Please enter your full name"),
+    msisdn: z.string().min(11, "Please enter a valid phone number"),
+    email: z.string().email("Please enter a valid email address"),
+    nid: z.string().length(10, "NID number must be exactly 10 characters"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    password_confirmation: z.string().min(6, "Confirm Password must be at least 6 characters"),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Passwords do not match",
+    path: ["password_confirmation"],
+  });
+
+// Utility Functions
+const handleApiError = (err: unknown): string => {
+  if (axios.isAxiosError(err)) {
+    console.error("register API error:", err.response?.data);
+    return err.response?.data?.message || "Registration failed. Please try again.";
+  }
+  console.error("Unexpected error:", err);
+  return "An unexpected error occurred. Please try again.";
+};
+
+// Components
 function FormField({
   name,
   control,
@@ -82,6 +74,7 @@ function FormField({
   type = "text",
   error,
   icon: Icon,
+  maxLength,
 }: FormFieldProps) {
   return (
     <>
@@ -93,6 +86,7 @@ function FormField({
           type={type}
           placeholder={placeholder}
           inputClassName="pl-12 h-12 pr-4 text-[#002B7A] placeholder:text-[#002B7A]"
+          maxLength={maxLength}
         />
       </div>
       {error && <p className="text-xs text-red-500">{error}</p>}
@@ -115,6 +109,10 @@ function Header() {
 }
 
 function Footer() {
+  const handleFooterClick = useCallback((item: string) => {
+    console.log(item);
+  }, []);
+
   return (
     <footer className="relative z-10 mt-auto pb-6">
       <div className="w-full pt-6">
@@ -133,7 +131,7 @@ function Footer() {
       <div className="max-w-7xl mx-auto px-15 py-6 flex flex-wrap items-center justify-between gap-6">
         <nav className="flex flex-wrap justify-center gap-8 text-sm text-[#0A142F]">
           {FOOTER_LINKS.map((item) => (
-            <button key={item} className="hover:text-gray-900">
+            <button key={item} onClick={() => handleFooterClick(item)} className="hover:text-gray-900">
               {item}
             </button>
           ))}
@@ -145,14 +143,6 @@ function Footer() {
       </div>
     </footer>
   );
-}
-
-interface RegisterFormProps {
-  onSubmit: (e?: React.BaseSyntheticEvent) => void;
-  control: any;
-  errors: any;
-  isValid: boolean;
-  isSubmitting: boolean;
 }
 
 function RegisterForm({ onSubmit, control, errors, isValid, isSubmitting }: RegisterFormProps) {
@@ -171,19 +161,19 @@ function RegisterForm({ onSubmit, control, errors, isValid, isSubmitting }: Regi
 
         <div className="space-y-4">
           <FormField
-            name="fullName"
+            name="full_name"
             control={control}
             placeholder="Full Name"
             icon={User}
-            error={errors.fullName?.message}
+            error={errors.full_name?.message}
           />
 
           <FormField
-            name="phone"
+            name="msisdn"
             control={control}
             placeholder="Phone Number"
             icon={Phone}
-            error={errors.phone?.message}
+            error={errors.msisdn?.message}
           />
 
           <FormField
@@ -195,27 +185,22 @@ function RegisterForm({ onSubmit, control, errors, isValid, isSubmitting }: Regi
             error={errors.email?.message}
           />
 
-          <div className="relative border border-gray-300 rounded-lg">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#FF9101] w-5 h-5" />
-            <Controller
-              name="passengerType"
-              control={control}
-              render={({ field }) => (
-                <PassengerTypePopover value={field.value} onChange={field.onChange} />
-              )}
-            />
-            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 w-8 h-5" />
-          </div>
-          {errors.passengerType && (
-            <p className="text-xs text-red-500">{errors.passengerType.message}</p>
-          )}
+          <FormField
+            name="nid"
+            control={control}
+            placeholder="NID Number"
+            type="text"
+            icon={IdCard}
+            error={errors.nid?.message}
+            maxLength={10}
+          />
 
           <Button
             onClick={onSubmit}
-            disabled={!isValid || isSubmitting}
+            disabled={isSubmitting}
             className="w-full bg-[#FF9101] hover:bg-orange-500 text-white py-7 font-inter rounded-lg text-lg transition"
           >
-            {isSubmitting ? "Sending..." : "Send OTP"}
+            {isSubmitting ? "Sending..." : "CONTINUE"}
           </Button>
 
           <p className="text-sm text-[#002B7A] text-left">
@@ -230,41 +215,96 @@ function RegisterForm({ onSubmit, control, errors, isValid, isSubmitting }: Regi
   );
 }
 
-// Main Component
-export default function RegisterPage() {
+// Custom Hook for Register Logic
+function useRegisterLogic() {
   const [step, setStep] = useState<Step>("register");
-  const [savedEmail, setSavedEmail] = useState("");
+  const [error, setError] = useState<string>("");
 
   const {
     control,
     handleSubmit,
     formState: { errors, isValid, isSubmitting },
+    setValue,
+    getValues,
+    trigger,
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     mode: "onChange",
     defaultValues: {
-      fullName: "",
-      phone: "",
+      full_name: "",
+      msisdn: "",
       email: "",
-      passengerType: "", // <-- REQUIRED!!
+      nid: "",
+      password: "",
+      password_confirmation: "",
     },
   });
 
-  const onSubmit = useCallback((data: RegisterFormValues) => {
-    setSavedEmail(data.email);
-    setStep("verify");
+  const onSubmit = useCallback(() => {
+    console.log("onSubmit - form data:", getValues());
+    setStep("password");
+  }, [getValues]);
+
+  const onFormSubmit = useCallback(() => {
+    console.log("calling form submit...");
+    const submit = handleSubmit(async (data: RegisterFormValues) => {
+      console.log("onFormSubmit - form data with password:", data);
+      setError("");
+
+      try {
+        const res = await api.post(API_URLS.register, data);
+        console.log("register API response:", res);
+        
+        // TODO: Handle token/user info if backend returns it
+        // Example: localStorage.setItem('token', res.data.token);
+        
+        setStep("success");
+      } catch (err) {
+        const errorMessage = handleApiError(err);
+        setError(errorMessage);
+        // You can display this error in the UI if needed
+      }
+    });
+
+    submit();
+  }, [handleSubmit]);
+
+  const handlePasswordSuccess = useCallback(() => {
+    setStep("success");
   }, []);
 
+  return {
+    step,
+    error,
+    control,
+    errors,
+    isValid,
+    isSubmitting,
+    setValue,
+    getValues,
+    trigger,
+    onSubmit,
+    onFormSubmit,
+    handlePasswordSuccess,
+  };
+}
 
-
-const handleVerifySuccess = useCallback(() => {
-  setStep("password");
-}, []);
-
-const handlePasswordSuccess = useCallback(() => {
-  setStep("success");
-}, []);
-
+// Main Component
+export default function RegisterPage() {
+  const {
+    step,
+    error,
+    control,
+    errors,
+    isValid,
+    isSubmitting,
+    setValue,
+    getValues,
+    trigger,
+    onSubmit,
+    onFormSubmit,
+    handlePasswordSuccess,
+  } = useRegisterLogic();
 
   return (
     <div className="min-h-screen relative overflow-hidden font-inter">
@@ -279,7 +319,7 @@ const handlePasswordSuccess = useCallback(() => {
       <main className="relative z-10 min-h-screen flex items-center justify-center px-4">
         {step === "register" && (
           <RegisterForm
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={onSubmit}
             control={control}
             errors={errors}
             isValid={isValid}
@@ -287,11 +327,15 @@ const handlePasswordSuccess = useCallback(() => {
           />
         )}
 
-        {step === "password" && <SetPassword onSuccess={handlePasswordSuccess} />}
-
-        {step === "verify" && <VerifyOtp email={savedEmail} onSuccess={handleVerifySuccess} />}
-
-
+        {step === "password" && (
+          <SetPassword
+            onSubmit={onFormSubmit}
+            onSuccess={handlePasswordSuccess}
+            setValue={setValue}
+            getValues={getValues}
+            trigger={trigger}
+          />
+        )}
 
         {step === "success" && <SuccessPage />}
       </main>

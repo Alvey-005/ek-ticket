@@ -3,10 +3,17 @@
 import { useState, useCallback, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
+import type { UseFormSetValue, UseFormGetValues, UseFormTrigger } from "react-hook-form";
+import type { RegisterFormValues } from "@/app/register/page";
+
 
 // Types
 interface SetPasswordProps {
+  onSubmit: () => void;
   onSuccess: () => void;
+  setValue: UseFormSetValue<RegisterFormValues>;
+  getValues: UseFormGetValues<RegisterFormValues>;
+  trigger: UseFormTrigger<RegisterFormValues>;
 }
 
 interface PasswordInputProps {
@@ -54,61 +61,60 @@ function Subtitle() {
   );
 }
 
-interface ErrorMessageProps {
-  message: string;
-}
-
-function ErrorMessage({ message }: ErrorMessageProps) {
+function ErrorMessage({ message }: { message: string }) {
   if (!message) return null;
-  
   return <p className="text-red-600 mt-2 text-sm">{message}</p>;
 }
 
 // Main Component
-export default function SetPassword({ onSuccess }: SetPasswordProps) {
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+export default function SetPassword({
+  onSubmit,
+  onSuccess,
+  setValue,
+  getValues,
+  trigger,
+}: SetPasswordProps) {
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handlePasswordChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-    if (error) setError("");
-  }, [error]);
+  const handlePasswordChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setValue("password", value);
+      trigger("password");
 
-  const handleConfirmChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setConfirm(e.target.value);
-    if (error) setError("");
-  }, [error]);
+      if (error) setError("");
+    },
+    [error, setValue, trigger]
+  );
 
-  const handleSubmit = useCallback(() => {
-    if (!password || !confirm) {
-      setError(ERROR_MESSAGES.REQUIRED);
-      return;
-    }
-    if (password !== confirm) {
-      setError(ERROR_MESSAGES.MISMATCH);
-      return;
-    }
+  const handleConfirmChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      // use the same field name as the form schema: `password_confirmation`
+      setValue("password_confirmation", value);
+      trigger("password_confirmation");
 
-    setError("");
-    onSuccess();
-  }, [password, confirm, onSuccess]);
+      if (error) setError("");
+    },
+    [error, setValue, trigger]
+  );
 
   return (
     <div className="max-w-xl w-full rounded-[30px] bg-white shadow-2xl px-15 py-20 mx-auto">
       <Title />
-      
       <Subtitle />
 
       <div className="mt-10 space-y-4">
         <PasswordInput
-          value={password}
+          value={getValues("password")}
           onChange={handlePasswordChange}
           placeholder="**********"
         />
 
         <PasswordInput
-          value={confirm}
+          // read password confirmation from the same key used in the schema
+          value={getValues("password_confirmation")}
           onChange={handleConfirmChange}
           placeholder="Confirm New Password"
         />
@@ -117,10 +123,11 @@ export default function SetPassword({ onSuccess }: SetPasswordProps) {
       <ErrorMessage message={error} />
 
       <Button
-        className="w-full bg-[#FF9101] text-white py-7 hover:bg-orange-500 text-md mt-6 font-inter text-md rounded-lg"
-        onClick={handleSubmit}
+        className="w-full bg-[#FF9101] text-white py-7 hover:bg-orange-500 text-md mt-6 font-inter rounded-lg"
+        onClick={onSubmit}
+        disabled={loading}
       >
-        Send OTP
+        {loading ? "Creating Account..." : "Continue"}
       </Button>
 
       <p className="text-sm text-[#002B7A] mt-4 text-left">
